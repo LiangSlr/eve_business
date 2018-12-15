@@ -19,7 +19,8 @@ def init_set(type_ids):
     """初始化"""
     '''数据初始化'''
     global goods
-    goods = {34: {'name': 'tritanium', 'volume': 0.01, 'profit': 0.1, 'margin': 1, 'profit_ten_thousand_cube':1},
+    goods = {34: {'name': 'tritanium', 'volume': 0.01, 'price_jita':1, 'price_domain':2,
+                  'profit': 0.1, 'margin': 1, 'profit_ten_thousand_cube':1},
              35:{}
              }
     for i in range(36, type_ids):
@@ -62,12 +63,13 @@ def get_market_order(region_id, type_id, order_type):
 
 
 def get_market_history(region_id, type_id):
-    '''获取市场历史数据
+    """
+        获取市场历史数据
         region为星域id
         type_id为物品id
-    '''
+    """
     region_id = str(region_id)
-    type_id = str(type_id)# 将输入转为字符串，增加鲁棒性
+    type_id = str(type_id)  # 将输入转为字符串，增加鲁棒性
     request_link = 'https://esi.evetech.net/latest/markets/' + region_id + '/history/?datasource=tranquility&type_id=' + type_id
     market_history = requests.get(request_link)
     market_history = market_history.json()
@@ -120,12 +122,14 @@ def profit_resell_one_type(type_id, route=1):
     else:
         print("吉他没有物品", type_id, "号物品的订单")
         return
+
     price = cur.execute("select price from market_orders "
                          "where type_id = " + str(type_id) + " and region_id = 10000043 and is_buy_order = 0 "
                          "order by price")  # 按照从低到高的顺序取价格, 多美物品
     if cur.fetchone() != None:
         min_price['domain'] = cur.fetchone()[0]  # 最低价格
     else:
+        print("多美没有物品", type_id, "号物品的订单")
         return
 
     cur.close()
@@ -167,8 +171,8 @@ def resell(type_ids):
 
 if __name__ == '__main__':
     '''计算吉他到艾玛，一个物品的利润和利润率'''
-    init_set(500)
-    resell(500)
+    init_set(600)
+    resell(600)
     # profit_resell_one_type(34, 0)
     # print(goods[34])
 

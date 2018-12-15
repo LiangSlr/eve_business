@@ -97,3 +97,6 @@ def test_sql():
 # sde = get_sde()
 # print(sde[30:31])
 # test_sql()
+type_ids = range(0, 10)
+x = map(tuple, type_ids)
+print(x, type_ids)
