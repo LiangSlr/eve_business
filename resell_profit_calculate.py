@@ -3,6 +3,7 @@ import json
 import numpy
 import matplotlib.pyplot as mpl
 import tkinter as tk
+import time
 from sql_data_handle import *
 """已完成，进一步任务，对订单排序，然后找出最低售价，再找出售地点的最低售价，然后计算利润"""
 """已完成，完成之后尝试开展对多个物品，甚至所有物品计算倒卖利润,
@@ -19,11 +20,10 @@ def init_set(type_ids):
     """初始化"""
     '''数据初始化'''
     global goods
-    goods = {34: {'name': 'tritanium', 'volume': 0.01, 'price_jita':1, 'price_domain':2,
-                  'profit': 0.1, 'margin': 1, 'profit_ten_thousand_cube':1},
-             35:{}
+    goods = {34: {'name': 'tritanium', 'volume': 0.01, 'min_price_jita':1, 'min_price_domain':2,
+                  'profit_jita_domain': 0.1, 'profit_domain_jita':1,  'margin_jita_domain': 1, 'profit_ten_thousand_cube':1},
              }
-    for i in range(36, type_ids):
+    for i in range(35, type_ids):
         goods[i] = {}
 
 
@@ -101,53 +101,52 @@ def order_sort(market_orders, sequence_type, location_id):
     return orders_sorted
 
 
-def profit_resell_one_type(type_id, route=1):
+def profit_resell_one_type(type_ids, route=1):
     """
-    计算两个星域之间某个商品的利润率
-        type_id为物品id
+    计算两个星域之间某个商品的利润率，目前读取订单数据太慢了，需要优化
+        type_ids为物品id，这个最好之后能更新为一list格式数据，内部为一些物品id
         route 1从吉他到多美，0从多美到吉他
     :return:
     """
     global goods
-    min_price = {}
     con = sqlite3.connect("E:\LHB/tools\eve\python/eve_business/business.db")
     cur = con.cursor()
 
-    price = cur.execute('select price from market_orders '
-                        'where type_id = ' + str(type_id) + ' and region_id = 10000002 and is_buy_order = 0 ' \
-                        'order by price')  # 按照从低到高的顺序取价格, 吉他物品
-    # print(cur.fetchone(), type(cur.fetchone()))
-    if cur.fetchone() != None:
-        min_price['jita'] = cur.fetchone()[0]  # 最低价格
-    else:
-        print("吉他没有物品", type_id, "号物品的订单")
-        return
-
-    price = cur.execute("select price from market_orders "
-                         "where type_id = " + str(type_id) + " and region_id = 10000043 and is_buy_order = 0 "
-                         "order by price")  # 按照从低到高的顺序取价格, 多美物品
-    if cur.fetchone() != None:
-        min_price['domain'] = cur.fetchone()[0]  # 最低价格
-    else:
-        print("多美没有物品", type_id, "号物品的订单")
-        return
-
+    print("正在读取订单数据")
+    start = time.time()
+    for i in range(34,type_ids):
+        price = cur.execute(
+            "select min(price) from market_orders where type_id = ? and region_id = 10000002 and is_buy_order = 0",(i,))
+        goods[i]['min_price_jita'] = cur.fetchone()  # 存储价格，吉他
+        price = cur.execute(
+            "select min(price) from market_orders where type_id = ? and region_id = 10000043 and is_buy_order = 0",(i,))
+        goods[i]['min_price_domain'] = cur.fetchone()
+        # print("订单已读取，type_id:", i)
+    print("完成订单读取，正在进行resell计算。运行时间：", time.time() - start)
+    keys = list(goods.keys())
+    for key in keys:
+        if goods[key]['min_price_jita'][0] == None or goods[key]['min_price_domain'][0] == None:  # 清除空值
+            del goods[key]
+            continue
+        else:
+            goods[key]['min_price_jita'] = goods[key]['min_price_jita'][0]
+            goods[key]['min_price_domain'] = goods[key]['min_price_domain'][0]
+        '''利润和利润率计算'''
+        if route:  # 吉他至多美
+            profit = goods[key]['min_price_domain'] - goods[key]['min_price_jita']
+            margin = profit / goods[key]['min_price_jita']  # 毛利润率,未考虑税
+            # profit_margin  # 净利润
+            goods[key]['profit_jita_domain'] = round(profit, 3)
+            goods[key]['margin_jita_domain'] = round(margin * 100, 3)  # 计算利润和利润率，用round取三位小数
+        else:
+            profit = goods[key]['min_price_jita'] - goods[key]['min_price_domain']
+            margin = profit / goods[key]['min_price_domain']  # 毛利润率,未考虑税
+        type_volume = 0.01
+        profit_ten_thousand_cube(profit, type_volume, key)
+    print("resell计算完成")
     cur.close()
     con.close()
 
-    '''利润和利润率计算'''
-    if route:
-        profit = min_price['domain'] - min_price['jita']
-        margin = profit / min_price['jita']  # 毛利润率,未考虑税
-        # profit_margin  # 净利润
-    else:
-        profit = min_price['jita'] - min_price['domain']
-        margin = profit / min_price['domain']  # 毛利润率,未考虑税
-
-    goods[type_id]['profit_jita_domain'] = round(profit, 3)
-    goods[type_id]['margin_jita_domain'] = round(margin * 100, 3)  # 计算利润和利润率，用round取三位小数
-    type_volume = 0.01
-    profit_ten_thousand_cube(profit, type_volume, type_id)
 
 
 def profit_ten_thousand_cube(profit, type_volume, type_id):
@@ -171,9 +170,9 @@ def resell(type_ids):
 
 if __name__ == '__main__':
     '''计算吉他到艾玛，一个物品的利润和利润率'''
-    init_set(600)
-    resell(600)
-    # profit_resell_one_type(34, 0)
-    # print(goods[34])
+    init_set(50000)
+    profit_resell_one_type(50000)
+    update_resell_data_row(goods)
+
 
 

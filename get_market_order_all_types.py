@@ -63,6 +63,9 @@ def insert_orders_in_database(region_id, market_orders):
     cur_business.executemany("insert into market_orders (is_buy_order, location_id, order_id, price, system_id, type_id, region_id) "
                              "values (?, ?, ?, ?, ?, ?, ?)", data)
     business_data.commit()
+    cur_business.execute("delete from market_orders where region_id = 10000002 and location_id != 60003760")
+    cur_business.execute("delete from market_orders where region_id = 10000043 and location_id != 60008494")
+    business_data.commit()
     print('orders have been inserted\n')
     '''关闭数据库'''
     cur_business.close()
@@ -92,6 +95,7 @@ def delete_data_in_market_orders(region_id):
     cur_execute = "delete from market_orders where region_id = " + str(region_id)
     cur.execute(cur_execute)
     connection.commit()
+    print("旧数据已经删除")
     '''关闭数据库'''
     cur.close()
     connection.close()
@@ -99,11 +103,10 @@ def delete_data_in_market_orders(region_id):
 
 if __name__ == '__main__':
     region_ids = [10000002, 10000043]
-    # delete_data_in_market_orders(region_ids[0])
-    # save_market_orders(region_ids[0])
+    delete_data_in_market_orders(region_ids[0])
     delete_data_in_market_orders(region_ids[1])
+    save_market_orders(region_ids[0])
     save_market_orders(region_ids[1])
-
 
 
 
