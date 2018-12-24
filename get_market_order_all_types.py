@@ -21,7 +21,7 @@ def get_market_orders(region_id, order_type='all', page='1', *type_id):
                        + region_id + '/orders/?datasource=tranquility&order_type=' \
                        + order_type + '&page=1&type_id=' \
                        + str(type_id[0])
-    print('prepare download orders')
+    print('downloading orders')
     market_order = requests.get(request_link).json()  # 获得市场订单，并更改数据类型为list
     print('market orders in page', page, 'have been downloaded')
     return market_order

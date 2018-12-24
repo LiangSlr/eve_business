@@ -20,11 +20,16 @@ def init_set(type_ids):
     """初始化"""
     '''数据初始化'''
     global goods
+    goods.clear()
+    con = sqlite3.connect("E:\LHB/tools\eve\python/eve_business/business.db")
+    cur = con.cursor()
     goods = {34: {'name': 'tritanium', 'volume': 0.01, 'min_price_jita':1, 'min_price_domain':2,
                   'profit_jita_domain': 0.1, 'profit_domain_jita':1,  'margin_jita_domain': 1, 'profit_ten_thousand_cube':1},
              }
     for i in range(35, type_ids):
         goods[i] = {}
+        cur.execute("select volume from resell where typeid = ?", (i,))
+        goods[i]['volume'] = cur.fetchone()[0]
 
 
 def quick_sort(list, start, end):
@@ -141,24 +146,25 @@ def profit_resell_one_type(type_ids, route=1):
         else:
             profit = goods[key]['min_price_jita'] - goods[key]['min_price_domain']
             margin = profit / goods[key]['min_price_domain']  # 毛利润率,未考虑税
-        type_volume = 0.01
-        profit_ten_thousand_cube(profit, type_volume, key)
+        profit_ten_thousand_cube(profit, key)
     print("resell计算完成")
     cur.close()
     con.close()
 
 
-
-def profit_ten_thousand_cube(profit, type_volume, type_id):
+def profit_ten_thousand_cube(profit, type_id):
     """计算异地万方利润"""
     '''
         profit 物品单件利润
-        volume 物品单件体积
         profit_ten_thousand_cube 一万方体积的该物品，利润为多少
     '''
-    number_ten_thousand_cube = 10000 / type_volume
-    goods[type_id]['profit_ten_thousand_cube'] = round(profit * number_ten_thousand_cube, 3)
-
+    global goods
+    if goods[type_id]['volume']:  # 防止物品体积不存在导致程序bug
+        number_ten_thousand_cube = 10000 / goods[type_id]['volume']
+        goods[type_id]['profit_ten_thousand_cube'] = round(profit * number_ten_thousand_cube, 3)
+    else:
+        del goods[type_id]
+        return
 
 def resell(type_ids):
     for i in range(34, type_ids):

@@ -17,13 +17,11 @@ def get_type_data(type_id):
     business_data.commit()
     cur_business.execute('select typeID, typeName, volume from resell')
     res_business = cur_business.fetchall()
-    # print(res_business)
     cur.close()
     cur_business.close()
     sde.close()
     business_data.close()
     return
-    # return res
 
 
 def update_infor_resell(type_id):
@@ -47,10 +45,6 @@ def update_infor_resell(type_id):
                                  (str(re[1]), str(re[2]), str(re[0])))
         print('typeid', re[0], '已修改，等待提交')
         re = cur.fetchone()
-    # else:
-    #     # print("invType 数据库中无此物品，typeid", type_id)
-    #     print('更新完成')
-    #     pass
     print('所有更新已提交')
     business_data.commit()
     '''关闭游标和数据库'''
@@ -80,10 +74,13 @@ def update_resell_data_row(goods):
     start = time.time()
     for key in goods:
         data.append(
-                    (goods[key]['profit_jita_domain'],  goods[key]['margin_jita_domain'],
+                    (goods[key]['min_price_jita'], goods[key]['min_price_domain'],
+                     goods[key]['profit_jita_domain'], goods[key]['margin_jita_domain'],
                     goods[key]['profit_ten_thousand_cube'], key) )
         i += 1
     cur_business.executemany("update resell set "
+                             " selling_price_jita= ?,"
+                             " selling_price_domain= ?,"
                              " profit = ?,"
                              " profit_percent= ?,"
                              " profit_ten_thousand_cube =?"
@@ -99,31 +96,21 @@ def update_resell_data_row(goods):
     # print(type_id , '完成更新')
 
 
-def update_resell_infor():
-    """
-    该函数的目的为此
-    :return: None
-
-    """
-
-
-
 if __name__ == '__main__':
-    # get_type_data(1)
     # type_ids = tuple(range(10000, 400000))
-    # update_infor_resell(type_ids)
+    update_infor_resell(1)
 
-    business_data = sqlite3.connect("E:\LHB/tools\eve\python\eve_business/business.db")
-    '''创建数据库游标'''
-    cur_business = business_data.cursor()
-    cur_business.execute("select typeID from resell")
-    re = cur_business.fetchone()
-    cur_business.execute("delete from resell where typeID > 50000 ")
-    # while re:
-    #     if re > 50000 :
-    #         pass
-    #     else:
-    #         cur_business.execute("delete from resell where typeID = ? ", (str(re[0])))
-    business_data.commit()
-    cur_business.close()
-    business_data.close()
+    # business_data = sqlite3.connect("E:\LHB/tools\eve\python\eve_business/business.db")
+    # '''创建数据库游标'''
+    # cur_business = business_data.cursor()
+    # cur_business.execute("select typeID from resell")
+    # re = cur_business.fetchone()
+    # cur_business.execute("delete from resell where typeID > 50000 ")
+    # # while re:
+    # #     if re > 50000 :
+    # #         pass
+    # #     else:
+    # #         cur_business.execute("delete from resell where typeID = ? ", (str(re[0])))
+    # business_data.commit()
+    # cur_business.close()
+    # business_data.close()
