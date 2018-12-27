@@ -54,10 +54,6 @@ def update_infor_resell(type_id):
     sde.close()
 
 
-
-    # print(type_id, '完成信息更新')
-
-
 def update_resell_data_row(goods):
     """
     将物品倒卖利润更新至数据库
@@ -89,28 +85,7 @@ def update_resell_data_row(goods):
     print('数据更新完毕,耗时：', time.time() - start)
     cur_business.close()
     business_data.close()
-    # else:
-    #     cur_business.close()
-    #     business_data.close()
-    #     return
-    # print(type_id , '完成更新')
 
 
 if __name__ == '__main__':
-    # type_ids = tuple(range(10000, 400000))
     update_infor_resell(1)
-
-    # business_data = sqlite3.connect("E:\LHB/tools\eve\python\eve_business/business.db")
-    # '''创建数据库游标'''
-    # cur_business = business_data.cursor()
-    # cur_business.execute("select typeID from resell")
-    # re = cur_business.fetchone()
-    # cur_business.execute("delete from resell where typeID > 50000 ")
-    # # while re:
-    # #     if re > 50000 :
-    # #         pass
-    # #     else:
-    # #         cur_business.execute("delete from resell where typeID = ? ", (str(re[0])))
-    # business_data.commit()
-    # cur_business.close()
-    # business_data.close()

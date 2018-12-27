@@ -5,17 +5,8 @@ import matplotlib.pyplot as mpl
 import tkinter as tk
 import time
 from sql_data_handle import *
-"""已完成，进一步任务，对订单排序，然后找出最低售价，再找出售地点的最低售价，然后计算利润"""
-"""已完成，完成之后尝试开展对多个物品，甚至所有物品计算倒卖利润,
-    问题：由于目前的方式是多次请求get，由于网速的原因导致进程较慢，
-    因此后续改进为一次性在第一次调用get类函数时获得所有物品order，history，并将这些数据分类存进一个global字典中，规避网络问题"""
-"""之后引入数据库，计算万方利润率，和满载强暴系数"""
-"""万方利润"""
-
 
 goods = {}
-
-
 def init_set(type_ids):
     """初始化"""
     '''数据初始化'''
@@ -126,7 +117,6 @@ def profit_resell_one_type(type_ids, route=1):
         price = cur.execute(
             "select min(price) from market_orders where type_id = ? and region_id = 10000043 and is_buy_order = 0",(i,))
         goods[i]['min_price_domain'] = cur.fetchone()
-        # print("订单已读取，type_id:", i)
     print("完成订单读取，正在进行resell计算。运行时间：", time.time() - start)
     keys = list(goods.keys())
     for key in keys:

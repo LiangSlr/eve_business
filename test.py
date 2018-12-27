@@ -6,6 +6,11 @@ import resell_profit_calculate as rps
 import yaml
 import sqlite3
 import PyQt5
+import threading
+import time
+from get_market_order_all_types import *
+import queue
+import traceback
 # import PyMySQL
 # test = get_market_order(10000002, 34, 'sell')
 # print(test)
@@ -92,11 +97,44 @@ def test_sql():
         其中 size均为数字位数，字符长度的意思，d表示小数点右侧最大位数
     '''
 
+q = queue.Queue()  # 定义长度无限，先入先出队列
+def get(region_id, page, q):
+    request_link = 'https://esi.evetech.net/latest/markets/'\
+                   + region_id + '/orders/?datasource=tranquility&order_type=all&page=' \
+                   + str(page)
+    t1 = requests.get(request_link)
+    print("orders in page %d have been downloaded."%(page), t1.elapsed.total_seconds())
+    market_orders = t1.json()
+    q.put(market_orders)
+
+
+def insert(region_id, q):
+
+    market_orders = q.get()
+    while True:
+        try:
+            market_orders += q.get(block=True, timeout=5)   # 从队列中获取数据
+        except:
+            print('队列为空，完成list合并')
+            # traceback.print_exc()
+            break
+    insert_orders_into_database(10000002, market_orders)
+
+
 '''函数运行'''
-# init_set()
-# sde = get_sde()
-# print(sde[30:31])
-# test_sql()
-type_ids = range(0, 10)
-x = map(tuple, type_ids)
-print(x, type_ids)
+delete_data_in_market_orders(10000002)
+delete_data_in_market_orders(10000043)
+start = time.time()
+for i in range(1, 10):
+    g = threading.Thread(target=get, args=('10000002', i, q))
+    # t.setDaemon(True)
+    g.start()
+# g = threading.Thread(target=get, args=('10000002', q))
+i = threading.Thread(target=insert, args=('10000002', q))
+# g.start()
+# time.sleep(1)
+i.start()
+
+print('总耗时：', time.time()-start)
+    # get('10000002', i)
+
