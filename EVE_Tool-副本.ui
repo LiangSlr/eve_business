@@ -120,7 +120,7 @@
              <property name="title">
               <string/>
              </property>
-             <layout class="QVBoxLayout" name="verticalLayout_5" stretch="0">
+             <layout class="QVBoxLayout" name="verticalLayout_5" stretch="5,1">
               <property name="spacing">
                <number>0</number>
               </property>
@@ -137,7 +137,7 @@
                <number>0</number>
               </property>
               <item>
-               <widget class="QTreeWidget" name="treeWidget_resell">
+               <widget class="QTreeView" name="treeView_resell">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
                   <horstretch>0</horstretch>
@@ -150,27 +150,26 @@
                   <height>0</height>
                  </size>
                 </property>
-                <column>
+               </widget>
+              </item>
+              <item>
+               <widget class="QGroupBox" name="groupBox_tool_left">
+                <property name="title">
+                 <string/>
+                </property>
+                <widget class="QPushButton" name="pushButton_3">
+                 <property name="geometry">
+                  <rect>
+                   <x>10</x>
+                   <y>10</y>
+                   <width>78</width>
+                   <height>24</height>
+                  </rect>
+                 </property>
                  <property name="text">
-                  <string>root</string>
+                  <string>PushButton</string>
                  </property>
-                </column>
-                <item>
-                 <property name="text">
-                  <string>1</string>
-                 </property>
-                 <property name="checkState">
-                  <enum>Checked</enum>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>2</string>
-                 </property>
-                 <property name="checkState">
-                  <enum>Checked</enum>
-                 </property>
-                </item>
+                </widget>
                </widget>
               </item>
              </layout>
@@ -273,7 +272,7 @@
      <x>0</x>
      <y>0</y>
      <width>1200</width>
-     <height>23</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu">
